@@ -1,5 +1,5 @@
-/* Configurações Globais */
-* {
+
+ {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -12,7 +12,7 @@ body {
     line-height: 1.6;
 }
 
-/* Cabeçalho */
+
 header {
     background-color: #0056b3;
     color: #ffffff;
@@ -37,7 +37,7 @@ nav a:hover {
     border-bottom: 2px solid #ffffff;
 }
 
-/* Conteúdo Principal */
+
 main {
     max-width: 1000px;
     margin: 40px auto;
@@ -50,7 +50,7 @@ main h2 {
     text-align: center;
 }
 
-/* Organização dos Cards (Flexbox) */
+
 article > div {
     display: flex;
     flex-wrap: wrap;
@@ -58,7 +58,7 @@ article > div {
     justify-content: center;
 }
 
-/* Estilização de cada Bloco/Card */
+
 article > div > div {
     background-color: #ffffff;
     border: 1px solid #dddddd;
@@ -70,7 +70,7 @@ article > div > div {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-/* Imagens Modificadas */
+
 .img-simbolo.acessibilidade {
     width: 150px;
     height: 150px;
@@ -83,7 +83,7 @@ article > div > div p {
     color: #555555;
 }
 
-/* Rodapé */
+
 footer {
     background-color: #333333;
     color: #ffffff;
