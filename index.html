@@ -26,6 +26,7 @@
     </header>
 
     <main role="main">
+        <!-- PLAYER DE MÚSICA -->
         <section class="card-container secao-player-topo">
             <p style="font-size: 0.9rem; font-weight: 600; color: var(--texto-principal);">🎵 Trilha Sonora de Acompanhamento</p>
             <div style="width: 250px; margin: 0 auto;">
@@ -38,6 +39,7 @@
             <div class="progress-bar" id="barra-progresso"></div>
         </div>
 
+        <!-- TELA 1: IDENTIFICAÇÃO DO ALUNO -->
         <section id="area-identificacao" class="card-container">
             <h2>Identificação do Aluno</h2>
             <p style="color: var(--texto-secundario); font-size: 0.95rem;">Preencha os dados abaixo para personalizar o relatório pedagógico antes de iniciar o questionário.</p>
@@ -57,6 +59,7 @@
             <button class="btn-resposta btn-sim" id="btn-iniciar" style="margin-top: 0.5rem;">Iniciar Triagem de Leitura</button>
         </section>
 
+        <!-- TELA 2: QUESTIONÁRIO -->
         <section id="area-questionario" style="display: none;">
             <section class="instrucoes" aria-label="Atalhos de teclado" style="margin-bottom: 1.5rem;">
                 <p><strong>Atalhos de Teclado:</strong> Pressione <kbd>N</kbd> ou <kbd>←</kbd> para <strong>NÃO</strong> | Pressione <kbd>S</kbd> ou <kbd>→</kbd> para <strong>SIM</strong>.</p>
@@ -72,6 +75,7 @@
             </article>
         </section>
 
+        <!-- TELA 3: RELATÓRIO FINAL -->
         <div class="card-container respostas-log" id="log-container" style="display: none;" tabindex="-1">
             <h3>Relatório de Preferências de Acessibilidade Escolar</h3>
             
@@ -96,6 +100,7 @@
             </div>
         </div>
 
+        <!-- SEÇÃO EXPLICATIVA -->
         <section class="card-container secao-explicativa">
             <h2>Como estas ferramentas ajudam a sua leitura</h2>
             <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.95rem; color: var(--texto-secundario);">
@@ -109,6 +114,7 @@
 
     <footer role="contentinfo">
         <p>© 2026 Plataforma de Diagnóstico de Acessibilidade Ocular. Todos os direitos reservados.</p>
+        <p style="margin-top: 0.3rem; font-weight: 600;">Desenvolvido por Oséias</p>
     </footer>
 
     <script src="https://audio.com/embed.js" async></script>
