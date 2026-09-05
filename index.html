@@ -3,55 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <title>Portal de Preferências de Acessibilidade Escolar</title>
     <link rel="stylesheet" href="style.css">
-
-    <title>Acessibilidade Ocular</title>
 </head>
 
 <body>
-    <header>
-        <h1>Site para auxiliar quem precisa</h1>
+    <div id="regua-leitura" class="regua-leitura" aria-hidden="true"></div>
 
-        <nav>
-            <a href="#">Início</a>
-        </nav>
+    <header class="toolbar-acessibilidade" role="banner">
+        <div class="brand-title">
+            Portal de Acessibilidade Escolar
+        </div>
+        <div class="grupo-controles" role="region" aria-label="Ferramentas de Acessibilidade">
+            <button class="btn-controle" id="btn-zoom-menos" aria-label="Diminuir texto">A-</button>
+            <button class="btn-controle" id="btn-zoom-reset" aria-label="Tamanho original">100%</button>
+            <button class="btn-controle" id="btn-zoom-mais" aria-label="Aumentar texto">A+</button>
+            <button class="btn-controle" id="btn-fonte-dislexia">Fonte Adaptada</button>
+            <button class="btn-controle" id="btn-regua">Régua</button>
+            <button class="btn-controle" id="btn-velocidade">Voz: 1x</button>
+            <button class="btn-controle" id="btn-tema">🌙 Escuro</button>
+        </div>
     </header>
 
-    <main>
-        <h2>Dar Visão</h2>
+    <main role="main">
+        <section class="card-container secao-player-topo">
+            <p style="font-size: 0.9rem; font-weight: 600; color: var(--texto-principal);">🎵 Trilha Sonora de Acompanhamento</p>
+            <div style="width: 250px; margin: 0 auto;">
+                <iframe src="https://audio.com/embed/v2/audio/1871334286400667?theme=dark&layout=square&cover=true&footer=true&author=true&watermark=true" style="display:block; border-radius: 8px; border: none; height: 250px; width: 250px;" loading="lazy" data-audiocom-embed></iframe>
+                <a href='https://audio.com/hazel-1855329352159538' target="_blank" style="text-align: center; display: block; color: var(--texto-secundario); font-size: 12px; font-family: sans-serif; line-height: 16px; margin-top: 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-decoration: none;">@hazel-1855329352159538</a>
+            </div>
+        </section>
 
-        <section>
-            <article>
-                <div>
-                    <div>
-                        <img
-                            src="https://cloudfront-us-east-1.images.arcpublishing.com/estadao/QDNK2LEF4NI5HOKE2JLFTVOGSM.jpg"
-                            alt="Símbolo de acessibilidade"
-                            class="img-simbolo acessibilidade"
-                        >
+        <div class="progress-container" aria-hidden="true">
+            <div class="progress-bar" id="barra-progresso"></div>
+        </div>
 
-                        <p>Veja como a acessibilidade é!</p>
-                    </div>
+        <section id="area-identificacao" class="card-container">
+            <h2>Identificação do Aluno</h2>
+            <p style="color: var(--texto-secundario); font-size: 0.95rem;">Preencha os dados abaixo para personalizar o relatório pedagógico antes de iniciar o questionário.</p>
 
-                    <div>
-                        <img
-                            src="https://cloudfront-us-east-1.images.arcpublishing.com/estadao/QDNK2LEF4NI5HOKE2JLFTVOGSM.jpg"
-                            alt="Símbolo de acessibilidade"
-                            class="img-simbolo acessibilidade"
-                        >
+            <div class="form-grupo">
+                <label for="nome-aluno">Nome do Aluno(a): <span style="color: var(--vermelho-erro);">*</span></label>
+                <input type="text" id="nome-aluno" class="form-input" placeholder="Ex: Lucas Silva" required>
+                <span id="erro-nome" class="mensagem-erro">Por favor, digite o nome do aluno antes de continuar.</span>
+            </div>
 
-                        <p>
-                            Site de alguma coisa assim, que fui colocado para fazer.
-                        </p>
-                    </div>
+            <div class="form-grupo">
+                <label for="turma-aluno">Turma / Ano Escolar: <span style="color: var(--vermelho-erro);">*</span></label>
+                <input type="text" id="turma-aluno" class="form-input" placeholder="Ex: 7º Ano B" required>
+                <span id="erro-turma" class="mensagem-erro">Por favor, informe a turma do aluno antes de continuar.</span>
+            </div>
+
+            <button class="btn-resposta btn-sim" id="btn-iniciar" style="margin-top: 0.5rem;">Iniciar Triagem de Leitura</button>
+        </section>
+
+        <section id="area-questionario" style="display: none;">
+            <section class="instrucoes" aria-label="Atalhos de teclado" style="margin-bottom: 1.5rem;">
+                <p><strong>Atalhos de Teclado:</strong> Pressione <kbd>N</kbd> ou <kbd>←</kbd> para <strong>NÃO</strong> | Pressione <kbd>S</kbd> ou <kbd>→</kbd> para <strong>SIM</strong>.</p>
+            </section>
+
+            <article class="card-container pergunta-card">
+                <h2 id="texto-pergunta" aria-live="assertive">Carregando pergunta...</h2>
+
+                <div class="botoes-container">
+                    <button class="btn-resposta btn-nao" id="btn-nao">NÃO (N)</button>
+                    <button class="btn-resposta btn-sim" id="btn-sim">SIM (S)</button>
                 </div>
             </article>
         </section>
+
+        <div class="card-container respostas-log" id="log-container" style="display: none;" tabindex="-1">
+            <h3>Relatório de Preferências de Acessibilidade Escolar</h3>
+            
+            <div class="info-aluno-header" id="info-aluno-header"></div>
+            <div class="card-resumo-indicador" id="resumo-indicador"></div>
+
+            <h4 style="margin-bottom: 0.8rem;">Respostas Registradas:</h4>
+            <ul id="lista-respostas"></ul>
+
+            <div class="secao-recomendacoes">
+                <h4>💡 Orientações Pedagógicas para o Professor / AEE:</h4>
+                <ul id="lista-recomendacoes"></ul>
+            </div>
+            
+            <p class="disclaimer-tecnico">
+                <strong>Isenção Técnica:</strong> Este documento trata-se de um relatório pedagógico de preferências de acessibilidade e autoavaliação de leitura, não constituindo laudo médico ou diagnóstico clínico.
+            </p>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1.5rem;">
+                <button class="btn-resposta btn-sim btn-exportar" id="btn-exportar" style="width: 100%;">Exportar Relatório Pedagógico (PDF)</button>
+                <button class="btn-secundario btn-reiniciar" id="btn-reiniciar" style="width: 100%;">🔄 Iniciar Nova Avaliação</button>
+            </div>
+        </div>
+
+        <section class="card-container secao-explicativa">
+            <h2>Como estas ferramentas ajudam a sua leitura</h2>
+            <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.95rem; color: var(--texto-secundario);">
+                <p><strong>📖 Fonte Adaptada (OpenDyslexic):</strong> Aumenta a diferenciação visual entre as letras para evitar confusão de leitura.</p>
+                <p><strong>🌙 Modo Escuro:</strong> Reduz o brilho excessivo da tela e o cansaço visual.</p>
+                <p><strong>📏 Régua de Leitura:</strong> Ajuda a acompanhar o texto linha por linha.</p>
+                <p><strong>🎧 Leitor de Voz e Trilha Sonora:</strong> Oferece suporte auditivo para reforçar a concentração durante o uso do portal.</p>
+            </div>
+        </section>
     </main>
 
-    <footer>
-        <p>Projeto feito por Oséias</p>
+    <footer role="contentinfo">
+        <p>© 2026 Plataforma de Diagnóstico de Acessibilidade Ocular. Todos os direitos reservados.</p>
     </footer>
+
+    <script src="https://audio.com/embed.js" async></script>
+    <script src="script.js"></script>
 </body>
 </html>
