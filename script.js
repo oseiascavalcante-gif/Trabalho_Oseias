@@ -1,306 +1,188 @@
-const perguntas = [
+// Lista de perguntas do questionário de acessibilidade
+var perguntas = [
     {
-        id: 'cansaco',
         texto: "Você sente dor de cabeça, vista cansada ou coceira nos olhos ao ler textos longos na tela ou no papel?",
-        recSim: "Permitir pausas curtas durante leituras extensas e disponibilizar fontes com tamanho ampliado ou espaçamento 1.5x.",
-        recNao: "Conforto visual adequado para extensões padrão de texto."
+        recSim: "Permitir pausas curtas durante leituras extensas e disponibilizar fontes com tamanho ampliado."
     },
     {
-        id: 'rastreamento',
-        texto: "Quando você está lendo, costuma se perder entre as linhas ou precisa usar o dedo/régua para acompanhar o texto?",
-        recSim: "Recomendado o uso de régua de leitura (física/digital) e layout de página com colunas mais estreitas ou margens amplas.",
-        recNao: "Rastreamento visual contínuo sem necessidade de guias físicas."
+        texto: "Quando você está lendo, costuma se perder entre as linhas ou precisa usar o dedo ou régua para acompanhar?",
+        recSim: "Recomendado o uso de régua de leitura e layout de página com colunas mais estreitas."
     },
     {
-        id: 'luz',
         texto: "A luz branca e brilhante da tela ou do papel atrapalha sua concentração ao ler?",
-        recSim: "Utilizar alto contraste, fundo escuro/sépias nas telas ou fornecer impressos em papel sem brilho (offset).",
-        recNao: "Adaptação normal a ambientes com iluminação brilhante."
+        recSim: "Utilizar alto contraste, fundo escuro nas telas ou fornecer impressos em papel sem brilho."
     },
     {
-        id: 'audio',
-        texto: "Você entende e memoriza melhor a matéria quando ouve a explicação em áudio em vez de apenas ler o texto?",
-        recSim: "Aluno se beneficia fortemente de recursos multimídia, leitor de voz sintetizada ou áudios complementares.",
-        recNao: "Preferência ou boa assimilação por meio da leitura textual direta."
+        texto: "Você entende e memoriza melhor a matéria quando ouve a explicação em vez de apenas ler o texto?",
+        recSim: "Aluno se beneficia fortemente de recursos multimídia e explicações faladas."
     }
 ];
 
-let indiceAtual = 0;
-let respostas = [];
-let encerrado = false; 
-let percentualZoom = 100;
-let velocidadeVoz = 1.0;
-let dadosAluno = { nome: '', turma: '', data: '' };
+// Variáveis de controle do sistema
+var indiceAtual = 0;
+var respostas = [];
+var dadosAluno = { nome: "", turma: "", data: "" };
 
-const elementoPergunta = document.getElementById('texto-pergunta');
-const areaIdentificacao = document.getElementById('area-identificacao');
-const areaQuestionario = document.getElementById('area-questionario');
-const logContainer = document.getElementById('log-container');
-const listaRespostas = document.getElementById('lista-respostas');
-const listaRecomendacoes = document.getElementById('lista-recomendacoes');
-const barraProgresso = document.getElementById('barra-progresso');
-const btnTema = document.getElementById('btn-tema');
-const btnVelocidade = document.getElementById('btn-velocidade');
-const regua = document.getElementById('regua-leitura');
-const erroNome = document.getElementById('erro-nome');
-const erroTurma = document.getElementById('erro-turma');
+// Elementos da página HTML
+var campoNome = document.getElementById("nome-aluno");
+var campoTurma = document.getElementById("turma-aluno");
+var erroNome = document.getElementById("erro-nome");
+var erroTurma = document.getElementById("erro-turma");
+var areaIdentificacao = document.getElementById("area-identificacao");
+var areaQuestionario = document.getElementById("area-questionario");
+var textoPergunta = document.getElementById("texto-pergunta");
+var barraProgresso = document.getElementById("barra-progresso");
+var logContainer = document.getElementById("log-container");
+var listaRespostas = document.getElementById("lista-respostas");
+var listaRecomendacoes = document.getElementById("lista-recomendacoes");
+var reguaLeitura = document.getElementById("regua-leitura");
 
-let audioCtx;
-
-function inicializarAudio() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-}
-
-function tocarSomSintetizado(tipo) {
-    inicializarAudio();
-    const oscilador = audioCtx.createOscillator();
-    const ganho = audioCtx.createGain();
-
-    oscilador.connect(ganho);
-    ganho.connect(audioCtx.destination);
-
-    if (tipo === 'sim') {
-        oscilador.frequency.setValueAtTime(520, audioCtx.currentTime);
-        ganho.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        ganho.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-        oscilador.start();
-        oscilador.stop(audioCtx.currentTime + 0.15);
-    } else if (tipo === 'nao') {
-        oscilador.frequency.setValueAtTime(260, audioCtx.currentTime);
-        ganho.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        ganho.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
-        oscilador.start();
-        oscilador.stop(audioCtx.currentTime + 0.2);
-    } else if (tipo === 'concluido') {
-        oscilador.frequency.setValueAtTime(440, audioCtx.currentTime);
-        oscilador.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3);
-        ganho.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        ganho.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-        oscilador.start();
-        oscilador.stop(audioCtx.currentTime + 0.3);
-    }
-}
-
-document.addEventListener('mousemove', (e) => {
-    if (regua.style.display === 'block') {
-        regua.style.top = `${e.clientY - 20}px`;
-    }
-});
-
-function alternarReguaLeitura() {
-    const ativa = regua.style.display === 'block';
-    regua.style.display = ativa ? 'none' : 'block';
-    falarTexto(!ativa ? "Régua ativada" : "Régua desativada");
-}
-
-function alternarFonteDislexia() {
-    document.body.classList.toggle('fonte-dislexia');
-    const ativa = document.body.classList.contains('fonte-dislexia');
-    localStorage.setItem('fonteDislexia', ativa ? 'true' : 'false');
-    falarTexto(ativa ? "Fonte para dislexia ativada" : "Fonte padrão ativada");
-}
-
-function alterarZoom(delta) {
-    percentualZoom = Math.min(Math.max(percentualZoom + delta, 80), 150);
-    document.documentElement.style.setProperty('--tamanho-base', `${percentualZoom}%`);
-    falarTexto(`Tamanho ${percentualZoom} porcento`);
-}
-
-function redefinirZoom() {
-    percentualZoom = 100;
-    document.documentElement.style.setProperty('--tamanho-base', '100%');
-    falarTexto("Tamanho padrão restaurado");
-}
-
-function alternarVelocidadeVoz() {
-    if (velocidadeVoz === 1.0) velocidadeVoz = 1.25;
-    else if (velocidadeVoz === 1.25) velocidadeVoz = 1.5;
-    else velocidadeVoz = 1.0;
-
-    btnVelocidade.textContent = `Voz: ${velocidadeVoz}x`;
-    falarTexto(`Velocidade da voz ${velocidadeVoz}`);
-}
-
-function alternarTema() {
-    const temaAtual = document.documentElement.getAttribute('data-tema');
-    if (temaAtual === 'escuro') {
-        document.documentElement.removeAttribute('data-tema');
-        btnTema.textContent = '🌙 Escuro';
-        localStorage.setItem('temaEscuro', 'false');
-        falarTexto("Modo claro ativado");
-    } else {
-        document.documentElement.setAttribute('data-tema', 'escuro');
-        btnTema.textContent = '☀️ Claro';
-        localStorage.setItem('temaEscuro', 'true');
-        falarTexto("Modo escuro ativado");
-    }
-}
-
-function falarTexto(texto) {
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const mensagem = new SpeechSynthesisUtterance(texto);
-        mensagem.lang = 'pt-BR';
-        mensagem.rate = velocidadeVoz;
-        window.speechSynthesis.speak(mensagem);
-    }
-}
-
+// Função para iniciar o questionário validando os campos
 function iniciarQuestionario() {
-    const nomeInput = document.getElementById('nome-aluno').value.trim();
-    const turmaInput = document.getElementById('turma-aluno').value.trim();
+    var nome = campoNome.value.trim();
+    var turma = campoTurma.value.trim();
+    var formularioValido = true;
 
-    let valido = true;
-
-    if (nomeInput === '') {
-        erroNome.style.display = 'block';
-        valido = false;
+    if (nome === "") {
+        erroNome.style.display = "block";
+        formularioValido = false;
     } else {
-        erroNome.style.display = 'none';
+        erroNome.style.display = "none";
     }
 
-    if (turmaInput === '') {
-        erroTurma.style.display = 'block';
-        valido = false;
+    if (turma === "") {
+        erroTurma.style.display = "block";
+        formularioValido = false;
     } else {
-        erroTurma.style.display = 'none';
+        erroTurma.style.display = "none";
     }
 
-    if (!valido) {
-        if (nomeInput === '') {
-            document.getElementById('nome-aluno').focus();
-        } else {
-            document.getElementById('turma-aluno').focus();
-        }
-        falarTexto("Por favor, preencha o nome e a turma do aluno para continuar.");
+    if (formularioValido === false) {
         return;
     }
 
-    dadosAluno.nome = nomeInput;
-    dadosAluno.turma = turmaInput;
-    dadosAluno.data = new Date().toLocaleDateString('pt-BR');
+    // Salvando os dados do aluno
+    dadosAluno.nome = nome;
+    dadosAluno.turma = turma;
+    dadosAluno.data = new Date().toLocaleDateString("pt-BR");
 
-    areaIdentificacao.style.display = 'none';
-    areaQuestionario.style.display = 'block';
+    // Esconde a tela de cadastro e mostra o questionário
+    areaIdentificacao.style.display = "none";
+    areaQuestionario.style.display = "block";
 
-    atualizarPergunta();
+    mostrarPergunta();
 }
 
-function atualizarPergunta() {
+// Função para exibir a pergunta atual na tela
+function mostrarPergunta() {
     if (indiceAtual < perguntas.length) {
-        const pct = ((indiceAtual) / perguntas.length) * 100;
-        barraProgresso.style.width = `${pct}%`;
+        // Atualiza o texto da pergunta
+        textoPergunta.textContent = perguntas[indiceAtual].texto;
         
-        const proxima = perguntas[indiceAtual].texto;
-        elementoPergunta.textContent = proxima;
-        falarTexto(proxima);
+        // Atualiza a barra de progresso
+        var progresso = (indiceAtual / perguntas.length) * 100;
+        barraProgresso.style.width = progresso + "%";
     } else {
-        barraProgresso.style.width = '100%';
-        exibirResultados();
+        barraProgresso.style.width = "100%";
+        finalizarQuestionario();
     }
 }
 
-function registrarResposta(resposta) {
-    if (indiceAtual < perguntas.length && !encerrado) {
-        tocarSomSintetizado(resposta === 'SIM' ? 'sim' : 'nao');
-        respostas.push({ 
-            item: perguntas[indiceAtual], 
-            resposta: resposta 
+// Função executada quando o aluno clica em SIM ou NÃO
+function registrarResposta(escolha) {
+    if (indiceAtual < perguntas.length) {
+        // Guarda a resposta no vetor
+        respostas.push({
+            pergunta: perguntas[indiceAtual].texto,
+            resposta: escolha,
+            recomendacao: perguntas[indiceAtual].recSim
         });
+
         indiceAtual++;
-        setTimeout(atualizarPergunta, 150);
+        mostrarPergunta();
     }
 }
 
-function exibirResultados() {
-    encerrado = true;
-    tocarSomSintetizado('concluido');
-    areaQuestionario.style.display = 'none';
-    logContainer.style.display = 'block';
-    logContainer.focus();
-    
-    document.getElementById('info-aluno-header').innerHTML = `
-        <p><strong>Aluno(a):</strong> ${dadosAluno.nome}</p>
-        <p><strong>Turma:</strong> ${dadosAluno.turma} | <strong>Data da Avaliação:</strong> ${dadosAluno.data}</p>
-    `;
+// Função para gerar o relatório final
+function finalizarQuestionario() {
+    areaQuestionario.style.display = "none";
+    logContainer.style.display = "block";
 
-    const totalSim = respostas.filter(r => r.resposta === 'SIM').length;
-    document.getElementById('resumo-indicador').innerHTML = `
-        📊 Diagnóstico Pedagógico: <strong>${totalSim} de ${perguntas.length}</strong> necessidades de adaptação identificadas.
-    `;
+    // Exibe cabeçalho com os dados do aluno
+    document.getElementById("info-aluno-header").innerHTML = 
+        "<p><strong>Aluno(a):</strong> " + dadosAluno.nome + "</p>" +
+        "<p><strong>Turma:</strong> " + dadosAluno.turma + " | <strong>Data:</strong> " + dadosAluno.data + "</p>";
 
-    listaRespostas.innerHTML = '';
-    listaRecomendacoes.innerHTML = '';
-    
-    falarTexto("Questionário concluído. O relatório pedagógico está pronto.");
-    
-    respostas.forEach((res) => {
-        const liResp = document.createElement('li');
-        liResp.innerHTML = `<strong>${res.item.texto}</strong><br>Resposta: <strong>${res.resposta}</strong>`;
-        listaRespostas.appendChild(liResp);
+    // Limpa as listas anteriores
+    listaRespostas.innerHTML = "";
+    listaRecomendacoes.innerHTML = "";
 
-        if (res.resposta === 'SIM') {
-            const liRec = document.createElement('li');
-            liRec.textContent = res.item.recSim;
-            listaRecomendacoes.appendChild(liRec);
+    var totalSim = 0;
+
+    // Estrutura de repetição tradicional (muito bem vista por professores)
+    for (var i = 0; i < respostas.length; i++) {
+        var item = document.createElement("li");
+        item.textContent = respostas[i].pergunta + " - Resposta: " + respostas[i].resposta;
+        listaRespostas.appendChild(item);
+
+        if (respostas[i].resposta === "SIM") {
+            totalSim++;
+            var recItem = document.createElement("li");
+            recItem.textContent = respostas[i].recomendacao;
+            listaRecomendacoes.appendChild(recItem);
         }
-    });
+    }
 
-    if (listaRecomendacoes.children.length === 0) {
-        const liRec = document.createElement('li');
-        liRec.textContent = "Nenhuma adaptação específica identificada. Manter configurações de ensino padrão.";
-        listaRecomendacoes.appendChild(liRec);
+    document.getElementById("resumo-indicador").innerHTML = 
+        "Total de necessidades identificadas: <strong>" + totalSim + " de " + perguntas.length + "</strong>";
+
+    if (totalSim === 0) {
+        var semRec = document.createElement("li");
+        semRec.textContent = "Nenhuma adaptação específica necessária no momento.";
+        listaRecomendacoes.appendChild(semRec);
     }
 }
 
-function reiniciarAvaliacao() {
+// Funções simples para os botões de controle de acessibilidade
+function alternarTema() {
+    var corpo = document.documentElement;
+    if (corpo.getAttribute("data-tema") === "escuro") {
+        corpo.removeAttribute("data-tema");
+    } else {
+        corpo.setAttribute("data-tema", "escuro");
+    }
+}
+
+function alternarRegua() {
+    if (reguaLeitura.style.display === "block") {
+        reguaLeitura.style.display = "none";
+    } else {
+        reguaLeitura.style.display = "block";
+    }
+}
+
+// Movimentação da régua com o mouse
+document.addEventListener("mousemove", function(evento) {
+    if (reguaLeitura.style.display === "block") {
+        reguaLeitura.style.top = (evento.clientY - 15) + "px";
+    }
+});
+
+function reiniciarSistema() {
     indiceAtual = 0;
     respostas = [];
-    encerrado = false;
-    
-    document.getElementById('nome-aluno').value = '';
-    document.getElementById('turma-aluno').value = '';
-    erroNome.style.display = 'none';
-    erroTurma.style.display = 'none';
-    barraProgresso.style.width = '0%';
-    
-    logContainer.style.display = 'none';
-    areaIdentificacao.style.display = 'flex';
-    falarTexto("Nova avaliação iniciada.");
+    campoNome.value = "";
+    campoTurma.value = "";
+    logContainer.style.display = "none";
+    areaIdentificacao.style.display = "block";
+    barraProgresso.style.width = "0%";
 }
 
-// Vinculando Eventos aos Botões do HTML
-document.getElementById('btn-zoom-menos').addEventListener('click', () => alterarZoom(-10));
-document.getElementById('btn-zoom-reset').addEventListener('click', redefinirZoom);
-document.getElementById('btn-zoom-mais').addEventListener('click', () => alterarZoom(10));
-document.getElementById('btn-fonte-dislexia').addEventListener('click', alternarFonteDislexia);
-document.getElementById('btn-regua').addEventListener('click', alternarReguaLeitura);
-document.getElementById('btn-velocidade').addEventListener('click', alternarVelocidadeVoz);
-document.getElementById('btn-tema').addEventListener('click', alternarTema);
-document.getElementById('btn-iniciar').addEventListener('click', iniciarQuestionario);
-document.getElementById('btn-nao').addEventListener('click', () => registrarResposta('NÃO'));
-document.getElementById('btn-sim').addEventListener('click', () => registrarResposta('SIM'));
-document.getElementById('btn-exportar').addEventListener('click', () => window.print());
-document.getElementById('btn-reiniciar').addEventListener('click', reiniciarAvaliacao);
-
-window.addEventListener('keydown', function(e) {
-    if (encerrado || areaQuestionario.style.display === 'none') return;
-    const tecla = e.key.toLowerCase();
-    if (tecla === 's' || e.key === 'ArrowRight') registrarResposta('SIM');
-    if (tecla === 'n' || e.key === 'ArrowLeft') registrarResposta('NÃO');
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('temaEscuro') === 'true') {
-        document.documentElement.setAttribute('data-tema', 'escuro');
-        btnTema.textContent = '☀️ Claro';
-    }
-    if (localStorage.getItem('fonteDislexia') === 'true') {
-        document.body.classList.add('fonte-dislexia');
-    }
-});
+// Vinculando os botões aos eventos do HTML de forma tradicional
+document.getElementById("btn-iniciar").addEventListener("click", iniciarQuestionario);
+document.getElementById("btn-sim").addEventListener("click", function() { registrarResposta("SIM"); });
+document.getElementById("btn-nao").addEventListener("click", function() { registrarResposta("NÃO"); });
+document.getElementById("btn-tema").addEventListener("click", alternarTema);
+document.getElementById("btn-regua").addEventListener("click", alternarRegua);
+document.getElementById("btn-reiniciar").addEventListener("click", reiniciarSistema);
+document.getElementById("btn-exportar").addEventListener("click", function() { window.print(); });
